@@ -5,6 +5,7 @@ from tkinter import messagebox, Text, ttk, N, S, E, W
 from tkinter.colorchooser import askcolor
 from tkfontchooser import askfont
 from tkcalendar import Calendar
+from PIL import ImageGrab
 
 COLOR = constants.WHITE_COLOR
 FONT = constants.BRUSH_FONT
@@ -113,5 +114,17 @@ class NewPostIt:
 
         if author and message:
             self.new.message.insert(tk.END, f"\n\n{author}\n({date})\n")
-            canvasobject.CreateCanvasObj(self.canvas, "ball1.png", 100, 100)
+            self.capture(self.new.message, "screenshot")
+            canvasobject.CreateCanvasObj(self.canvas, "screenshot.png", 100, 100)
             self.new.destroy()
+    
+    def capture(self, widget, file_name,file_format='png'):
+        """Take screenshot of the passed widget"""
+
+        x0 = widget.winfo_rootx()
+        y0 = widget.winfo_rooty()
+        x1 = x0 + widget.winfo_width()
+        y1 = y0 + widget.winfo_height()
+        
+        im = ImageGrab.grab(bbox=(x0, y0, x1, y1)) # bbox means boundingbox, which is shown in the image below
+        im.save(f'images/{file_name}.{file_format}')  # Can also say im.show() to display it

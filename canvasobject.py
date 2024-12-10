@@ -1,5 +1,5 @@
 import tkinter as tk
-  
+
 IMAGE_PATH = "images/"
 
 class CreateCanvasObj(object):
