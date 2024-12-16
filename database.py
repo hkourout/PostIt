@@ -13,7 +13,7 @@ class Database:
     def insert(self, values):
         keys = ",".join(constants.POSTIT_PARAMETERS)
         print(values)
-        self._db.execute('insert into {} ({}) values (?, ?, ?, ?, ?, ?, ?, ?)'.format(constants.TABLE_NAME, keys), values)
+        self._db.execute('insert into {} ({}) values (?, ?, ?, ?, ?, ?, ?, ?, ?)'.format(constants.TABLE_NAME, keys), values)
         self._db.commit()
 
     def retrieve(self, key, value):
@@ -21,11 +21,11 @@ class Database:
         return [dict(row) for row in cursor.fetchall() ]
 
     def update(self, id, key, value):
-        self._db.execute('update {} set {} = ? where id = ?'.format(self._table, key), (value, id))
+        self._db.execute('update {} set {} = ? where image = ?'.format(self._table, key), (value, id))
         self._db.commit()
 
     def delete(self, id):
-        self._db.execute('delete from {} where id = ?'.format(self._table), (id,))
+        self._db.execute('delete from {} where image = ?'.format(self._table), (id,))
         self._db.commit()
 
     def disp_rows(self):
@@ -33,6 +33,10 @@ class Database:
         for row in cursor:
             print('  {}: {}'.format(row['t1'], row['i1']))
 
+    def get_row(self):
+        cursor = self._db.execute('select * from {} '.format(self._table))
+        return cursor
+        
     def __iter__(self):
         cursor = self._db.execute('select * from {} '.format(self._table))
         for row in cursor:

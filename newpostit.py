@@ -1,22 +1,32 @@
 import tkinter as tk
 import constants
 import canvasobject
+import uuid
+import random
+
 from tkinter import messagebox, Text, ttk, N, S, E, W
 from tkinter.colorchooser import askcolor
 from tkfontchooser import askfont
 from tkcalendar import Calendar
-from PIL import ImageGrab
+from PIL import ImageGrab, Image
+from loadpostit import LoadPostIt
 
-COLOR = constants.WHITE_COLOR
-FONT = constants.BRUSH_FONT
 TODAY_DATE = constants.TODAY_DATE
+SIZES = [300, 325, 350, 375, 400]
 
 class NewPostIt:
-    def __init__(self, root, canvas):
+    def __init__(self, root, canvas, db):
         #def open_self.new():
         # Create secondary (or popup) window.
-        self.new = tk.Toplevel(root)
+        self.root = root
+        self.new = tk.Toplevel(self.root)
         self.canvas = canvas
+        self.db = db
+        self.color = constants.WHITE_COLOR
+        self.font = constants.BRUSH_FONT
+        self.width = random.choice(SIZES)
+        self.height = random.choice(SIZES)
+        self.image = str(uuid.uuid4())
 
         self.new.title("New Post It")
         self.new.geometry("400x300+300+200")
@@ -29,13 +39,13 @@ class NewPostIt:
 
         self.new.f1.grid(column=0, row=0, sticky=(N, S, E, W))  # added sticky
         #self.new.message = ttk.Frame(self.new.f1, borderwidth=5, relief="sunken", width=200, height=100)
-        self.new.message = Text(self.new.f1, foreground=constants.BLACK_COLOR, background=COLOR, borderwidth=5, relief="sunken", width=30, height=15)
+        self.new.message = Text(self.new.f1, foreground=constants.BLACK_COLOR, background=self.color, borderwidth=5, relief="sunken", width=30, height=15)
         self.new.author_label = ttk.Label(self.new.f1, text="Author")
         self.new.author_entry = ttk.Entry(self.new.f1)
 
         self.new.color = ttk.Button(self.new.f1, text="Color", command=self.change_color)
         self.new.style = ttk.Button(self.new.f1, text="Style", command=self.change_font)
-        self.new.date = ttk.Button(self.new.f1, text="Date", command=self.change_date)
+        self.new.date = ttk.Button(self.new.f1, text=f"{TODAY_DATE}", command=self.change_date)
         self.new.ok = ttk.Button(self.new.f1, text="Ok", command=self.create_postit)
         self.new.cancel = ttk.Button(self.new.f1, text="Cancel", command=self.new.destroy)
 
@@ -61,9 +71,14 @@ class NewPostIt:
 
     def change_color(self):
         colors = askcolor(title="Color Chooser")
-        COLOR = colors[1]
-        self.new.message.config(bg=COLOR)
-        print(COLOR)
+        print(colors)
+        if colors[1]:
+            self.color = colors[1]
+        else:
+            self.color = constants.WHITE_COLOR
+        self.new.message.config(bg=self.color)
+        self.new.message.update_idletasks()
+        print(self.color)
 
     def change_font(self):
         # open the font chooser and get the font selected by the user
@@ -77,9 +92,13 @@ class NewPostIt:
                 font_str += ' underline'
             if font['overstrike']:
                 font_str += ' overstrike'
-            FONT = font_str
-        print(FONT)
-        self.new.message.config(font=FONT)
+            self.font = font_str
+        else:
+            self.font=constants.BRUSH_FONT
+        print(self.font)
+        self.new.message.config(font=self.font)
+        self.new.message.update_idletasks()
+
 
     def change_date(self):
         top = tk.Toplevel(self.new)
@@ -100,31 +119,62 @@ class NewPostIt:
         author = self.new.author_entry.get()
         message = self.new.message.get("1.0",tk.END).strip()
         date = self.new.date.cget("text")
+        image = self.image
+        font = self.font
+        color = self.color
+        width = self.width
+        height = self.height
+        x_pos = self.new.message.winfo_width()
+        y_pos = self.new.message.winfo_height()
         print("author: ", "~"+author+"~")
         print("message: ", "~"+message+"~")
+        print("font: ", "~"+font+"~")
         print("date: ", "~"+date+"~")
+        print("color: ", "~"+color+"~")
+        print("image: ", image)
+        print("width: ", width)
+        print("height: ", height)
+        print("x_pos: ", x_pos)
+        print("y_pos: ", y_pos)
+
         if not author:
             messagebox.showerror("Invalid Input", "Please enter Author name.")
 
         if not message:
             messagebox.showerror("Invalid Input", "Please write a message, a posit it can't be empty")
 
-        if not date:
-            date = constants.TODAY_DATE
-
         if author and message:
-            self.new.message.insert(tk.END, f"\n\n{author}\n({date})\n")
-            self.capture(self.new.message, "screenshot")
-            canvasobject.CreateCanvasObj(self.canvas, "screenshot.png", 100, 100)
+            self.new.message.delete('1.0', 'end')
+            self.new.message.insert('1.0', f'{author} ({date})\n\n{message}')
+            self.new.message.update_idletasks()
+            #message = self.new.message.get("1.0",tk.END).strip()
+            self.capture(self.new.message, self.image, "png", width, height)
+            self.db.insert((author, message, font, date, color, image, str(x_pos)+" "+str(y_pos), str(width)+" "+str(height), ""))
+            canvasobject.CreateCanvasObj(self.root, self.canvas, image, ".png", x_pos, y_pos, self.db)
+            self.load_post_it()
             self.new.destroy()
     
-    def capture(self, widget, file_name,file_format='png'):
+    def load_post_it(self):
+        self.canvas.delete("all")
+        LoadPostIt(self.root, self.canvas, self.db)
+
+    def capture(self, widget, file_name, file_format, width, height):
         """Take screenshot of the passed widget"""
 
-        x0 = widget.winfo_rootx()
-        y0 = widget.winfo_rooty()
-        x1 = x0 + widget.winfo_width()
-        y1 = y0 + widget.winfo_height()
+        #x0 = widget.winfo_rootx()
+        #y0 = widget.winfo_rooty()
+        #x1 = x0 + widget.winfo_width()
+        #y1 = y0 + widget.winfo_height()
+
+        x0 = self.new.winfo_rootx() + widget.winfo_rootx() + 15
+        y0 = self.new.winfo_rooty() + widget.winfo_rooty() + 15
+        x1 = x0 + self.new.winfo_width() + widget.winfo_width() - 170
+        y1 = y0 + self.new.winfo_height() + widget.winfo_height() - 90
         
-        im = ImageGrab.grab(bbox=(x0, y0, x1, y1)) # bbox means boundingbox, which is shown in the image below
-        im.save(f'images/{file_name}.{file_format}')  # Can also say im.show() to display it
+        print("x1-x0: ",x1-x0)
+        print("y1-y0: ",y1-y0)
+        img = ImageGrab.grab(bbox=(x0, y0, x1, y1)) # bbox means boundingbox, which is shown in the image below
+        img.save(f'images/{file_name}_tmp.{file_format}')  # Can also say im.show() to display it
+        img = Image.open(f'images/{file_name}_tmp.{file_format}')
+        new_img = img.resize((width, height))
+        new_img.save(f'images/{file_name}.{file_format}')

@@ -8,13 +8,14 @@ CREATE_TABLE = """CREATE TABLE IF NOT EXISTS """+TABLE_NAME+""" (
             style text NOT NULL, 
             date DATE, 
             color text NOT NULL, 
+            image text NOT NULL, 
             position text NOT NULL, 
             angle text NOT NULL, 
             categorie text NOT NULL
         );"""
 
 # author, message, style, date, color, position, angle, categorie
-POSTIT_PARAMETERS = ["author", "message", "style", "date", "color", "position", "angle", "categorie"]
+POSTIT_PARAMETERS = ["author", "message", "style", "date", "color", "image", "position", "angle", "categorie"]
 
 BLACK_COLOR = "#000000"
 WHITE_COLOR = "#FFFFFF"
