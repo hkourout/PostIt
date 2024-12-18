@@ -3,16 +3,20 @@ import constants
 import canvasobject
 import uuid
 import random
+import os
+import glob
 
 from tkinter import messagebox, Text, ttk, N, S, E, W
 from tkinter.colorchooser import askcolor
 from tkfontchooser import askfont
 from tkcalendar import Calendar
-from PIL import ImageGrab, Image
+from PIL import ImageGrab, Image, ImageTk
 from loadpostit import LoadPostIt
 
 TODAY_DATE = constants.TODAY_DATE
 #SIZES = [300, 325, 350, 375, 400]
+
+IMAGES_PATH = "images/"
 
 class EditPostIt:
     def __init__(self, root, canvas, db, image):
@@ -20,21 +24,27 @@ class EditPostIt:
         # Create secondary (or popup) window.
         self.root = root
         self.edit = tk.Toplevel(self.root)
+        self.edit.wm_transient(root)
+
         self.canvas = canvas
         self.db = db
         self.image = image
         
-        row = db.retrieve("image", self.image)
+        self.edit.title("Update Post It")
+        #self.edit.geometry("400x300+300+200")
+        self.edit.geometry("400x300+0+0")
+        #self.edit.config(width=300, height=200)
+
+        row = self.db.retrieve_value_of_key("image", self.image)
         print("ROW", row)
         self.width = int(row[0]["angle"].split()[0])
         self.height = int(row[0]["angle"].split()[1])
+        
+        self.x_pos = int(row[0]["position"].split()[0])
+        self.y_pos = int(row[0]["position"].split()[1])
 
         self.color = row[0]["color"]
         self.font = row[0]["style"]
-
-        self.edit.title("Update Post It")
-        self.edit.geometry("400x300+300+200")
-        self.edit.config(width=300, height=200)
 
         self.edit.f1_style = ttk.Style()
         self.edit.f1_style.configure('My.TFrame', background='#e0e0e0')
@@ -145,8 +155,8 @@ class EditPostIt:
         color = self.color
         width = self.width
         height = self.height
-        x_pos = self.edit.message.winfo_width()
-        y_pos = self.edit.message.winfo_height()
+        x_pos = self.x_pos
+        y_pos = self.y_pos
         print("author: ", "~"+author+"~")
         print("message: ", "~"+message+"~")
         print("font: ", "~"+font+"~")
@@ -178,33 +188,53 @@ class EditPostIt:
             self.db.update(image,"color", color)
             self.db.update(image,"position", str(x_pos)+" "+str(y_pos))
             self.db.update(image,"angle", str(width)+" "+str(height))
-
+            self.canvas.delete(self.image)
+            self.edit.destroy()
             canvasobject.CreateCanvasObj(self.root, self.canvas, image, ".png", x_pos, y_pos, self.db)
-            self.load_post_it()
+            #self.load_post_it()
             
     
     def load_post_it(self):
-        self.canvas.delete("all")
+        self.canvas.delete(self.image)
         LoadPostIt(self.root, self.canvas, self.db)
         self.edit.destroy()
         
     def delete_postit(self):
-        self.db.delete(self.image)
-        print(f"Posit it {self.image} deleted!")
-        self.load_post_it()
+        self.canvas.delete(self.image)
+        self.alpha = 255  # Start with fully transparent
+        self.image_with_alpha = Image.open("{}{}".format(IMAGES_PATH, self.image+".png")).convert("RGBA")
+        #self.image_with_alpha = self.tk_image.copy()
+        self.fade_out()
 
+
+    def fade_out(self):
+        if self.alpha > 0:
+            self.alpha -= 10
+            self.image_with_alpha.putalpha(self.alpha)
+            self.tk_image = ImageTk.PhotoImage(self.image_with_alpha)
+            self.canvas.create_image(self.x_pos, self.y_pos, image=self.tk_image, tags=self.image)
+            self.canvas.after(50, self.fade_out)
+        else:
+            for f in glob.glob(f"{IMAGES_PATH}/{self.image}*"):
+                os.remove(f)
+            print(f"Posit it {self.image} deleted!")
+            #self.load_post_it()
+            self.edit.destroy()
+            self.db.delete(self.image)
+
+            
     def capture(self, widget, file_name, file_format, width, height):
         """Take screenshot of the passed widget"""
 
-        #x0 = widget.winfo_rootx()
-        #y0 = widget.winfo_rooty()
-        #x1 = x0 + widget.winfo_width()
-        #y1 = y0 + widget.winfo_height()
+        x0 = widget.winfo_rootx() #+ 10
+        y0 = widget.winfo_rooty() #+ 15
+        x1 = x0 + widget.winfo_width()
+        y1 = y0 + widget.winfo_height()
 
-        x0 = self.edit.winfo_rootx() + widget.winfo_rootx() + 15
-        y0 = self.edit.winfo_rooty() + widget.winfo_rooty() + 15
-        x1 = x0 + self.edit.winfo_width() + widget.winfo_width() - 170
-        y1 = y0 + self.edit.winfo_height() + widget.winfo_height() - 90
+        #x0 = self.edit.winfo_rootx() + widget.winfo_rootx() + 15
+        #y0 = self.edit.winfo_rooty() + widget.winfo_rooty() + 15
+        #x1 = x0 + self.edit.winfo_width() + widget.winfo_width() - 170
+        #y1 = y0 + self.edit.winfo_height() + widget.winfo_height() - 90
         
         print("x1-x0: ",x1-x0)
         print("y1-y0: ",y1-y0)

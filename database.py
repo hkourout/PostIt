@@ -16,7 +16,15 @@ class Database:
         self._db.execute('insert into {} ({}) values (?, ?, ?, ?, ?, ?, ?, ?, ?)'.format(constants.TABLE_NAME, keys), values)
         self._db.commit()
 
-    def retrieve(self, key, value):
+    def retrieve(self, value):
+        cursor = self._db.execute('select * from {} where message like ? or \
+                            author like ? or \
+                            date like ? or \
+                            style like ? or \
+                            categorie like ?'.format(self._table), [f"%{value}%" for _ in range(5)])
+        return [dict(row) for row in cursor.fetchall() ]
+    
+    def retrieve_value_of_key(self, key, value):
         cursor = self._db.execute('select * from {} where {} like ?'.format(self._table, key), [f"%{value}%"])
         return [dict(row) for row in cursor.fetchall() ]
 
@@ -73,9 +81,9 @@ def main():
     #for row in db: print(row)
 
     print('Retrieve rows')
-    print(db.retrieve("author", "11"))
-    print(db.retrieve("message", "test"))
-    print(db.retrieve("date", 'date3'))
+    print(db.retrieve_value_of_key("author", "11"))
+    print(db.retrieve_value_of_key("message", "test"))
+    print(db.retrieve_value_of_key("date", 'date3'))
     print('Update rows')     
 
     db.update(6,"message","TEST")

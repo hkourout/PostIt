@@ -8,7 +8,7 @@ from tkinter import messagebox, Text, ttk, N, S, E, W
 from tkinter.colorchooser import askcolor
 from tkfontchooser import askfont
 from tkcalendar import Calendar
-from PIL import ImageGrab, Image
+from PIL import ImageGrab, Image, ImageTk
 from loadpostit import LoadPostIt
 
 TODAY_DATE = constants.TODAY_DATE
@@ -20,6 +20,8 @@ class NewPostIt:
         # Create secondary (or popup) window.
         self.root = root
         self.new = tk.Toplevel(self.root)
+        self.new.wm_transient(root)
+
         self.canvas = canvas
         self.db = db
         self.color = constants.WHITE_COLOR
@@ -29,8 +31,8 @@ class NewPostIt:
         self.image = str(uuid.uuid4())
 
         self.new.title("New Post It")
-        self.new.geometry("400x300+300+200")
-        self.new.config(width=300, height=200)
+        self.new.geometry("400x300+0+0")
+        #self.new.config(width=300, height=200)
 
         self.new.f1_style = ttk.Style()
         self.new.f1_style.configure('My.TFrame', background='#e0e0e0')
@@ -150,26 +152,46 @@ class NewPostIt:
             #message = self.new.message.get("1.0",tk.END).strip()
             self.capture(self.new.message, self.image, "png", width, height)
             self.db.insert((author, message, font, date, color, image, str(x_pos)+" "+str(y_pos), str(width)+" "+str(height), ""))
-            canvasobject.CreateCanvasObj(self.root, self.canvas, image, ".png", x_pos, y_pos, self.db)
+            #canvasobject.CreateCanvasObj(self.root, self.canvas, image, ".png", x_pos, y_pos, self.db)
             self.load_post_it()
             self.new.destroy()
-    
+                
     def load_post_it(self):
         self.canvas.delete("all")
         LoadPostIt(self.root, self.canvas, self.db)
 
     def capture(self, widget, file_name, file_format, width, height):
         """Take screenshot of the passed widget"""
+        
+        self.root.update_idletasks()
+        self.new.update_idletasks()
+        widget.update_idletasks()
 
-        #x0 = widget.winfo_rootx()
-        #y0 = widget.winfo_rooty()
-        #x1 = x0 + widget.winfo_width()
-        #y1 = y0 + widget.winfo_height()
-
-        x0 = self.new.winfo_rootx() + widget.winfo_rootx() + 15
-        y0 = self.new.winfo_rooty() + widget.winfo_rooty() + 15
-        x1 = x0 + self.new.winfo_width() + widget.winfo_width() - 170
-        y1 = y0 + self.new.winfo_height() + widget.winfo_height() - 90
+        x0 = widget.winfo_rootx() #+ 10
+        y0 = widget.winfo_rooty() #+ 15
+        x1 = x0 + widget.winfo_width()
+        y1 = y0 + widget.winfo_height()
+        
+        print("self.root.winfo_rootx() :", self.root.winfo_rootx() )
+        print("self.root.winfo_rooty() :", self.root.winfo_rooty() )
+        
+        print("self.canvas.winfo_rootx() :", self.canvas.winfo_rootx() )
+        print("self.canvas.winfo_rooty() :", self.canvas.winfo_rooty() )
+        
+        print("self.new.winfo_rootx() :", self.new.winfo_rootx() )
+        print("self.new.winfo_rooty() :", self.new.winfo_rooty() )
+        
+        print("widget.winfo_rootx() :", widget.winfo_rootx() )
+        print("widget.winfo_rooty() :", widget.winfo_rooty() )
+        
+        print("widget.winfo_width() :", widget.winfo_width() )
+        print("widget.winfo_height() :", widget.winfo_height() )
+        
+        
+        #x0 = self.new.winfo_rootx() + widget.winfo_rootx() + 15
+        #y0 = self.new.winfo_rooty() + widget.winfo_rooty() + 15
+        #x1 = x0 + self.new.winfo_width() + widget.winfo_width() - 170
+        #y1 = y0 + self.new.winfo_height() + widget.winfo_height() - 90
         
         print("x1-x0: ",x1-x0)
         print("y1-y0: ",y1-y0)

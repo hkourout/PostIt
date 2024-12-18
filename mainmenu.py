@@ -1,3 +1,4 @@
+import canvasobject
 from tkinter import Menu
 #from new import open_new_window
 from newpostit import NewPostIt
@@ -91,12 +92,24 @@ class MainMenu:
             underline=0
         )
 
-def validate_entry(entry):
+def validate_combo(combo, db, root, canvas):
+    select = combo.get()
+    print("Vous avez sélectionné : '", select,"'")
+    
+def validate_entry(entry, db, root, canvas):
     print("Search in progress...: "+entry.get())
+    canvas.delete("all")
+    print(db.retrieve(entry.get()))
+    for d in db.retrieve(entry.get()):
+        print(d)
+        x_pos = d["position"].split()[0]
+        y_pos = d["position"].split()[1]
+        print(d, x_pos, y_pos)
+        canvasobject.CreateCanvasObj(root, canvas, d["image"], ".png", x_pos, y_pos, db)
 
 def disable_entry(entry):
-    entry.configure(state="disabled", disabledbackground="white")
+    entry.configure(state="disabled", disabledbackground="steelblue")
     
 def enable_entry(entry):
-    entry.configure(state="normal")
+    entry.configure(state="normal", disabledbackground="white")
     
