@@ -200,11 +200,15 @@ class EditPostIt:
         self.edit.destroy()
         
     def delete_postit(self):
-        self.canvas.delete(self.image)
-        self.alpha = 255  # Start with fully transparent
-        self.image_with_alpha = Image.open("{}{}".format(IMAGES_PATH, self.image+".png")).convert("RGBA")
-        #self.image_with_alpha = self.tk_image.copy()
-        self.fade_out()
+        MsgBox = messagebox.askquestion ('Delete?', 'Are you sure you want to delete this post it?',icon = 'warning')
+        if MsgBox == 'yes':
+            # Your code
+            self.canvas.delete(self.image)
+            self.alpha = 255  # Start with fully transparent
+            self.image_with_alpha = Image.open("{}{}".format(IMAGES_PATH, self.image+".png")).convert("RGBA")
+            #self.image_with_alpha = self.tk_image.copy()
+            self.edit.destroy()
+            self.fade_out()
 
 
     def fade_out(self):
@@ -219,7 +223,6 @@ class EditPostIt:
                 os.remove(f)
             print(f"Posit it {self.image} deleted!")
             #self.load_post_it()
-            self.edit.destroy()
             self.db.delete(self.image)
 
             

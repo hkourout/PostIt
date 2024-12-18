@@ -41,7 +41,16 @@ class MainMenu:
         def find_post_it():
             enable_entry(self.search)
 
+        def sort_by_key(key):
+            clear_post_it()
+            x_pos = 400
+            y_pos = 100
+            for d in self.db.get_sorted_row(key):
+                x_pos += 100
+                y_pos += 100
+                canvasobject.CreateCanvasObj(root, canvas, d["image"], ".png", x_pos, y_pos, db)
 
+    
         # add menu items to the File menu
         file_menu.add_command(label='New', underline=0, command=new_post_it)
         file_menu.add_command(label='Load', underline=0, command=load_post_it)
@@ -51,10 +60,12 @@ class MainMenu:
 
         # add a submenu
         sub_menu = Menu(file_menu, tearoff=0)
-        sub_menu.add_command(label='Author')
-        sub_menu.add_command(label='Date')
-        sub_menu.add_command(label='Categorie')
-
+        sub_menu.add_command(label='Author', command=lambda: sort_by_key("author"))
+        sub_menu.add_command(label='Date', command=lambda: sort_by_key("date"))
+        sub_menu.add_command(label='Color', command=lambda: sort_by_key("color"))
+        sub_menu.add_command(label='Style', command=lambda: sort_by_key("style"))
+        sub_menu.add_command(label='Creation', command=lambda: sort_by_key("id"))
+        
         # add the File menu to the menubar
         file_menu.add_cascade(
             label="Sort",
@@ -92,9 +103,9 @@ class MainMenu:
             underline=0
         )
 
-def validate_combo(combo, db, root, canvas):
-    select = combo.get()
-    print("Vous avez sélectionné : '", select,"'")
+# def validate_combo(combo, db, root, canvas):
+#     select = combo.get()
+#     print("Vous avez sélectionné : '", select,"'")
     
 def validate_entry(entry, db, root, canvas):
     print("Search in progress...: "+entry.get())

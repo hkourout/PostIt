@@ -1,7 +1,7 @@
 import tkinter as tk
 import constants
 import database
-from mainmenu import MainMenu, disable_entry, validate_entry, validate_combo
+from mainmenu import MainMenu, disable_entry, validate_entry #, validate_combo
 from tkinter import ttk
 
 # Configure root window
@@ -23,26 +23,26 @@ canvas = tk.Canvas(root, width=width, height=height, bg='steelblue', highlightth
 canvas.pack(fill="both", expand=True)
 search = tk.Entry(canvas)
 
-# 2) - créer la liste Python contenant les éléments de la liste Combobox
-listeProduits=["Select", "Laptop", "Imprimante","Tablette","SmartPhone"]
+# # 2) - créer la liste Python contenant les éléments de la liste Combobox
+# listeProduits=["Select", "Laptop", "Imprimante","Tablette","SmartPhone"]
 
-# 3) - Création de la Combobox via la méthode ttk.Combobox()
-combo = ttk.Combobox(root, values=listeProduits)
+# # 3) - Création de la Combobox via la méthode ttk.Combobox()
+# combo = ttk.Combobox(root, values=listeProduits)
 
 def onclick_entry(event):
     validate_entry(search, db, root, canvas)
 
-def onclick_combo(event):
-    validate_combo(combo, db, root, canvas)
+# def onclick_combo(event):
+#     validate_combo(combo, db, root, canvas)
     
 search.pack(side='top', anchor='nw') #, fill="x")
 search.bind('<Return>', onclick_entry)
 disable_entry(search)
 
-combo.current(0)
+# combo.current(0)
 
-combo.pack(side='bottom', anchor='ne')
-combo.bind("<<ComboboxSelected>>", onclick_combo)
+# combo.pack(side='bottom', anchor='ne')
+# combo.bind("<<ComboboxSelected>>", onclick_combo)
 
 # Create root menu
 MainMenu(root, canvas, db, search)

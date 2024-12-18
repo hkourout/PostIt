@@ -44,6 +44,10 @@ class Database:
     def get_row(self):
         cursor = self._db.execute('select * from {} '.format(self._table))
         return cursor
+    
+    def get_sorted_row(self, key):
+        cursor = self._db.execute('select * from {} order by {} '.format(self._table, key))
+        return cursor
         
     def __iter__(self):
         cursor = self._db.execute('select * from {} '.format(self._table))
