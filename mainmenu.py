@@ -44,10 +44,10 @@ class MainMenu:
         def sort_by_key(key):
             clear_post_it()
             x_pos = 400
-            y_pos = 100
+            y_pos = 120
             for d in self.db.get_sorted_row(key):
                 x_pos += 100
-                y_pos += 100
+                y_pos += 60
                 canvasobject.CreateCanvasObj(root, canvas, d["image"], ".png", x_pos, y_pos, db)
 
     

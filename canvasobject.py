@@ -1,9 +1,10 @@
 import tkinter as tk
+import random
 from editpostit import EditPostIt
 from PIL import Image, ImageTk
 
 IMAGES_PATH = "images/"
-
+ANGLES_IMG = [-2, -1, 0, 1, 2]
 class CreateCanvasObj(object):
     def __init__(self, root, canvas, image_name, image_format, xpos, ypos, db):
         self.root = root
@@ -16,6 +17,7 @@ class CreateCanvasObj(object):
         self.alpha = 0  # Start with fully transparent
         self.image_with_alpha = Image.open("{}{}".format(IMAGES_PATH, image_name+image_format)).convert("RGBA")
         #self.image_with_alpha = self.tk_image.copy()
+        self.angle = random.choice(ANGLES_IMG)
         self.fade_in()
         self.move_flag = False
 
@@ -24,7 +26,7 @@ class CreateCanvasObj(object):
         if self.alpha < 255:
             self.alpha += 10  # Increase opacity
             self.image_with_alpha.putalpha(self.alpha)
-            self.tk_image = ImageTk.PhotoImage(self.image_with_alpha)
+            self.tk_image = ImageTk.PhotoImage(self.image_with_alpha.rotate(self.angle))
             #self.canvas.config(image=self.tk_image)
             self.image_obj = self.canvas.create_image(self.xpos, self.ypos, image=self.tk_image, tags=self.image_name)
             #self.image_obj= canvas.create_image(xpos, ypos, image=self.tk_image)
